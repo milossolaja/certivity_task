@@ -1,2 +1,5 @@
 main_backup.ipynb
 main_outdated.ipynb
+.DS_Store
+__pycache__/
+.env
