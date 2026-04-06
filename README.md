@@ -68,11 +68,12 @@ There are still references that the current patterns miss so regex patterns can 
 
 Add support for cross paragraph annex references, e.g. Annex 4 paragraph 2.1 is referenced from Paragraph 4. Split reference into two parts and use first part for scope search, second for paragraph search.
 
-### 2. Smarter prefix resolution
+### 2. Smarter resolution
 
-Currently any prefix match is a `candidate`. A short prefix like `"4"` or `"8"` can match hundreds of paragraphs, most of which are irrelevant. Possible fixes:
+A short prefix like `"4"` or `"8"` can match hundreds of paragraphs, most of which are irrelevant. Current solution therefore only uses one dotted part afterwards to extend range.
 
-- Require a minimum depth (e.g. at least two dotted parts) before allowing a prefix match
+When reference cannot be matched with keys from `exact`, all keys are sent to LLM. This includes way too many paragraphs, most of which are irrelevant, making it hard for LLM to determine the correct one. Possible fixes:
+
 - Implement ranking mechanism based on semantic similarity (embeddings)
 - Contextual narrowing: use the source paragraph's own section number to prefer siblings and children over distant relatives
 
