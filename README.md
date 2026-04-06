@@ -17,7 +17,7 @@ A set of compiled regex patterns scans the paragraph text and extracts:
 - Structured items: `Annex 3`, `Table 1`, `Figure 5`, `Annex 2 - Appendix A`
 - Ambiguous items: standalone `Appendix N` (parent annex unknown)
 
-Ranges are expanded using an algorithm that handles cross-prefix cases.
+Ranges are expanded using an algorithm that handles cross-prefix cases using `children` dict that maps partial strings to all paragraphs that start with that prefix as e.g. `'2.1.': ['2.1.1.', '2.1.2.', '2.1.3.', '2.1.4.', '2.1.5.', '2.1.6.', '2.1.7.']`.
 
 **Stage 2 — LLM fallback (optional)**
 
@@ -25,12 +25,9 @@ Any references flagged as ambiguous (e.g. a bare `Appendix B` whose parent annex
 
 **Resolution**
 
-Resolved reference strings are looked up against two indexes built from the corpus:
+Resolved reference strings are looked up against indexes built from the corpus. `exact` dict maps a full section string directly to a paragraph ID as e.g. `'1.4.': '659d4ec2cbbf0962d3573854'`
 
-- `exact` — maps a full section string directly to a paragraph ID as e.g. `'1.4.': '659d4ec2cbbf0962d3573854'`
-- `children` — maps partial strings to all paragraphs that start with that prefix as e.g. `'2.1.': ['2.1.1.', '2.1.2.', '2.1.3.', '2.1.4.', '2.1.5.', '2.1.6.', '2.1.7.']`
-
-Each reference is classified as either `certain` meaning it is exact match or `candidate` which requires LLM to be resolved.
+Each reference is classified as either `certain` meaning it is exact match or `candidate` which requires LLM to be resolved. LLM is prompted with extracted candidate reference and list of all keys from `exact` dict.
 
 ---
 
@@ -59,13 +56,11 @@ If the key is not set, the system still runs, ambiguous references are simply re
 
 1. `evaluation_data.json` and `test_data.json` must be in the same directory as `main.ipynb`.
 2. Launch Jupyter
-3. Run all cells in order (`Kernel → Restart & Run All`).
+3. Run all cells
 
 ---
 
 ## Potential Improvements
-
-The following changes would improve reliability and make the system production-ready.
 
 ### 1. Improve recall with richer regex coverage
 
@@ -84,7 +79,6 @@ Currently any prefix match is a `candidate`. A short prefix like `"4"` or `"8"` 
 ### 3. Structured pipeline instead of a notebook
 
 Refactor into a Python package with clearly separated concerns.
-This makes unit testing, CI integration, and incremental improvement more straightforward.
 
 ### 4. Caching and batching for LLM calls
 
@@ -105,3 +99,7 @@ Migrate the current self-tests to e.g. pytest.
 ### 7. Output schema
 
 Return results as a typed dataclass or Pydantic model rather than raw dicts, so downstream consumers have a stable, documented interface.
+
+### 8. Prompts
+
+Clarify and expand the prompts used for the LLM fallback. Add concrete examples including text, ambiguous reference and final reference to show how ambiguous references should be resolved.
